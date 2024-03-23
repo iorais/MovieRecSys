@@ -1,0 +1,50 @@
+[1] Link Prediction: LightGCN w/ PyG
+    - predicts links between user and movie ('positive' rating)
+    - postive rating: > 3 or >= 3
+
+[2] Predict Rating Score
+    - rating score must be a number 1 - 5
+
+    - Defining variables:
+        - a: user of interest
+        - m: movie of interest
+        - U: users who have watched movie m
+
+    [a] Cosine Similarity
+        - Find users in U similar to a
+        - users are similar if they rated common movies similarly
+        - [Rating]: knn weighted_avg(weights, ratings)
+            - nearest neighbors are k highest weights
+            - weights: cosine similarity score between a and u in U
+            - ratings: ratings of movie m by users in U
+
+    [b] Perason Correlation
+        - Find users in U similar to a
+        - users are similar by the relative ratings of movies
+        - baseline is average user rating
+        - [Rating]: knn modified weighted_avg(weights, ratings)
+            - nearest neighbors are k highest abs value of weights (for inversely related users)
+            - weights: cosine similarity score between a_normalized and u_normalized in U
+            - ratings: a_mean + dot(weights, ratings) / L1norm(weights)
+
+    [c] Modifcation: Add punishment to weight based on Linked Predictions
+        - Cosine similarity
+            
+
+        - Pearson Correlation
+            l = link prediction (-1 or +1)
+            w = cosine(a_norm, u_norm)
+
+            Punish:  l * w * w = res
+                    +1  +1  +1 = +1       +l agrees       with    +w    reinforces +
+                    +1  -1  -1 = +1       +l disagrees    with    -w    punishes -
+                    -1  +1  +1 = -1       -l disagrees    with    +w    punishes +
+                    -1  -1  -1 = -1       -l agrees       with    -w    reinforces +
+
+            (l * l * w):    decides the to either punish the weight or reinforce it
+                      c:    decides how much it is reinforced/punished (0 < c < 1) [hyperparameter]
+
+            1 - abs(w):     how close is w to +1 or -1
+                abs(w):     how close is w to 0
+                
+            weight = w + c(l * w * w)
